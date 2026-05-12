@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sahayak — Next.js app
 
-## Getting Started
+This folder contains the **Sahayak** Next.js application (frontend + `/api/analyze` route handler).
 
-First, run the development server:
+For the full project description, hackathon attribution, architecture overview, and roadmap, see the [repository root README](../README.md).
+
+---
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack) — note: APIs and conventions differ from older Next versions. See `AGENTS.md`.
+- React 19
+- TypeScript (strict)
+- Tailwind CSS v4
+- `@google/generative-ai` (Gemini, structured JSON output)
+- `lucide-react` icons
+- Browser Web Speech API for bilingual voice input
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- A Google Gemini API key — [aistudio.google.com](https://aistudio.google.com/app/apikey)
+
+### Install
+
+```bash
+npm install
+```
+
+### Environment
+
+Create `.env.local` in this folder:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+# Optional override (defaults to gemini-2.5-flash)
+# GEMINI_MODEL=gemini-2.5-pro
+```
+
+`.env.local` is gitignored — never commit your key.
+
+### Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+### Lint
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Folder structure
 
-## Deploy on Vercel
+```
+sahayak/
+├── app/
+│   ├── layout.tsx              ← root layout, fonts, metadata
+│   ├── page.tsx                ← homepage: capture, AI analysis, formal draft
+│   ├── globals.css             ← Tailwind v4 entry + theme tokens
+│   └── api/
+│       └── analyze/
+│           └── route.ts        ← POST /api/analyze — Gemini triage endpoint
+├── public/                     ← static assets
+├── AGENTS.md                   ← repo conventions for AI agents (read this first)
+├── CLAUDE.md                   ← Claude-specific instructions, re-exports AGENTS.md
+├── next.config.ts
+├── postcss.config.mjs
+├── tsconfig.json
+└── package.json
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The route handler lives at `app/api/analyze/route.ts` — there is no `src/` directory in this project, so any new route handlers belong under `app/` directly.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## API endpoint
+
+`POST /api/analyze`
+
+Accepts `{ "complaint": "..." }` (Hindi / English / Hinglish, 4–4000 chars). Returns a structured triage record:
+
+```json
+{
+  "issueType": "ROAD_AND_POTHOLES",
+  "authority": "MUNICIPAL_CORPORATION",
+  "severity": "MEDIUM",
+  "location": "Abes College",
+  "summary": "A pothole has been reported near Abes College."
+}
+```
+
+Full request/response shapes, enum values, and error codes are documented in the [root README](../README.md#api-reference).
+
+---
+
+## Working with this codebase
+
+- **Read `AGENTS.md` first.** Next.js 16 has breaking changes from older versions — APIs and conventions may differ from training data, so docs in `node_modules/next/dist/docs/` are the source of truth.
+- **Tailwind v4** uses `@import "tailwindcss"` + `@theme` directives in `globals.css` — there is no `tailwind.config.js`.
+- **Hot reload** is on by default with `npm run dev`. The dev server refuses to start if another instance is already bound to the port — kill the existing process with `taskkill /PID <pid> /F` (Windows) before restarting.
+- **Web Speech API** only works in Chromium-based browsers, Safari, and Edge — the UI gracefully degrades elsewhere.
+- **Demo mode** kicks in automatically when `/api/analyze` is unreachable, so the UX never dead-ends even without internet or a valid key.
+
+---
+
+## Deploy
+
+The easiest deployment target is [Vercel](https://vercel.com/new). Set `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`) as a project environment variable before the first deploy.
