@@ -1,7 +1,6 @@
 # Sahayak — AI-Powered Civic Complaint Platform
 
 > Hackathon submission by **Tech Titans** for the HackIndia AI DeepTech Hackathon, ABES Ghaziabad.
-> `hackindia-team:hackindia-ai-deeptech-hackathon-abes-ghaziabad:tech-titans`
 
 Sahayak is a voice-first, bilingual (Hindi + English) civic complaint platform that uses Google Gemini to triage citizen complaints, classify them against an Indian municipal taxonomy, and auto-draft a formal government-style complaint letter — all in seconds.
 
